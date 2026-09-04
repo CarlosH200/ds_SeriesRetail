@@ -1,0 +1,128 @@
+<div class="container mt-4 shadow-sm">
+  <!-- Barra de búsqueda y botones -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-5">
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" class="form-control custom-input px-3 shadow-sm" placeholder="Buscar Id Serie"
+               [(ngModel)]="query" (keyup.enter)="buscar(query)" />
+        <button class="btn btn-primary btn-buscar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                (click)="buscar(query)">
+          <i class="material-icons">search</i>
+        </button>
+      </div>
+    </div>
+
+    <div class="col-md-7 text-end d-flex justify-content-end align-items-center">
+      <button class="btn btn-outline-primary me-2 d-flex align-items-center" (click)="limpiarTodo()">
+        <i class="material-icons me-1">cleaning_services</i> Nuevo proceso
+      </button>
+      
+      <!-- Se muestra solo si hay más de 1 seleccionada -->
+      <ng-container *ngIf="seleccionadas.length > 1">
+        <button class="btn btn-primary me-2 d-flex align-items-center"
+                (click)="confirmarCambioLote()">
+          <i class="material-icons me-1">autorenew</i> Regresar a Activo
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <h6 class="mb-3 text-muted" *ngIf="seleccionadas.length > 0">Series seleccionadas: {{ seleccionadas.length }}</h6>
+  
+  <div class="table-responsive mb-4 rounded shadow-sm border border-light">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-dark-blue">
+        <tr>
+          <th scope="col" style="width: 50px;">
+            <input type="checkbox" class="form-check-input shadow-sm"
+                   [disabled]="resultados.length === 0"
+                   [checked]="resultados.length > 0 && seleccionadas.length === resultados.length"
+                   (change)="toggleSeleccionTodos(($any($event.target)).checked)" style="cursor: pointer;" />
+          </th>
+          <th scope="col">ID Serie</th>
+          <th scope="col">ID Producto</th>
+          <th scope="col">Descripción Producto</th>
+          <th scope="col">Estado Actual</th>
+          <th scope="col" *ngIf="seleccionadas.length <= 1">Cambiar Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Estado inicial: no ha buscado -->
+        <tr *ngIf="!haBuscado">
+          <td [attr.colspan]="seleccionadas.length <= 1 ? 6 : 5" class="text-center text-muted py-5">
+            <i class="material-icons mb-2" style="font-size: 3rem; color: #ccc;">search</i>
+            <p class="mb-0">Ingrese un término de búsqueda para comenzar.</p>
+          </td>
+        </tr>
+        
+        <!-- Estado: buscó pero no encontró resultados -->
+        <tr *ngIf="haBuscado && resultados.length === 0">
+          <td [attr.colspan]="seleccionadas.length <= 1 ? 6 : 5" class="text-center text-muted py-5">
+            <i class="material-icons mb-2" style="font-size: 3rem; color: #ccc;">warning</i>
+            <p class="mb-0">No se encontraron coincidencias en esta tabla para "{{ query }}".</p>
+          </td>
+        </tr>
+
+        <!-- Estado: resultados encontrados -->
+        <tr *ngFor="let serie of resultados">
+          <td>
+            <input type="checkbox" class="form-check-input shadow-sm" style="cursor: pointer;"
+                   [checked]="seleccionadas.includes(serie.idSerie)" 
+                   (change)="toggleSeleccion(serie.idSerie, ($any($event.target)).checked)" />
+          </td>
+          <td><strong>{{ serie.idSerie }}</strong></td>
+          <td>{{ serie.idProducto }}</td>
+          <td>{{ serie.descripcionProducto }}</td>
+          <td>
+            <span class="badge rounded-pill px-3 py-2" [ngClass]="serie.Estado === 'Activo' ? 'bg-success' : 'bg-danger'">
+              {{ serie.Estado }}
+            </span>
+          </td>
+          <td *ngIf="seleccionadas.length <= 1">
+            <button *ngIf="serie.Estado === 'Inactivo'"
+                    class="btn btn-sm btn-primary d-flex align-items-center gap-1"
+                    (click)="confirmarCambioUna(serie.idSerie)">
+              <i class="material-icons" style="font-size: 16px;">autorenew</i> Regresar a Activo
+            </button>
+            <span *ngIf="serie.Estado === 'Activo'" class="text-muted" style="font-size: 0.85rem;">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-muted mt-2 d-flex justify-content-between align-items-center" *ngIf="haBuscado && resultados.length > 0">
+    <span>Mostrando {{ resultados.length }} coincidencia(s).</span>
+  </div>
+
+  <!-- Ocultamos el historial si no hay registros -->
+  <ng-container *ngIf="historial.length > 0">
+    <h5 class="mb-3 mt-5 border-bottom pb-2" style="color: #0b3d91;">Historial de series actualizadas</h5>
+    <div class="table-responsive rounded shadow-sm">
+      <table class="table table-striped align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>ID Serie</th>
+            <th>Estado Anterior</th>
+            <th>Nuevo Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of historial">
+            <td><strong>{{ h.idSerie }}</strong></td>
+            <td>
+              <span class="badge" [ngClass]="h.estadoAnterior === 'Activo' ? 'bg-success' : 'bg-danger'">
+                {{ h.estadoAnterior }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="h.nuevoEstado === 'Activo' ? 'bg-success' : 'bg-danger'">
+                {{ h.nuevoEstado }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

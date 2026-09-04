@@ -1,0 +1,98 @@
+.container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+}
+
+/* Modificado para azul más oscuro en el encabezado de tabla */
+.table-dark-blue th {
+  background-color: #0b3d91 !important;
+  color: #ffffff;
+  border-bottom: 2px solid #082a63;
+}
+
+.badge {
+  font-size: 0.9rem;
+}
+
+/* Color azul más oscuro para los botones principales */
+.btn-primary {
+  background-color: #0b3d91;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background-color: #082a63;
+}
+
+/* Outline button color ajustado */
+.btn-outline-primary {
+  border: 1px solid #0b3d91;
+  color: #0b3d91;
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0b3d91;
+  color: #fff;
+}
+
+.material-icons {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+/* Diseño mejorado del input individual */
+.custom-input {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  height: 42px;
+}
+
+.custom-input:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 0 0 0.2rem rgba(11, 61, 145, 0.25) !important;
+  outline: none;
+}
+
+/* Boton circular de busqueda con tamano fijo */
+.btn-buscar {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+}
+
+.form-select-sm {
+  font-size: 0.85rem;
+}
+
+.btn.rounded-circle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 4px;
+}
+
+@media (max-width: 768px) {
+  .text-end {
+    text-align: center !important;
+    margin-top: 10px;
+  }
+
+  .btn-primary,
+  .btn-outline-primary {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .material-icons {
+    font-size: 18px;
+  }
+}
