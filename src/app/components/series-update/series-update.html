@@ -1,4 +1,6 @@
-<div class="container mt-4 shadow-sm">
+<app-loading *ngIf="isLoading"></app-loading>
+
+<div class="container mt-4 shadow-sm" *ngIf="!isLoading">
   <!-- Barra de búsqueda y botones -->
   <div class="row mb-4 align-items-center">
     <div class="col-md-5">
@@ -13,6 +15,15 @@
     </div>
 
     <div class="col-md-7 text-end d-flex justify-content-end align-items-center">
+      
+      <!-- Selector de cantidad a mostrar -->
+      <div class="d-flex align-items-center me-3">
+        <label for="limite" class="me-2 text-muted" style="white-space: nowrap; font-size: 0.9rem;">Mostrar:</label>
+        <select id="limite" class="form-select form-select-sm" style="width: auto;" [(ngModel)]="limiteResultados">
+          <option *ngFor="let op of opcionesLimite" [value]="op">{{ op }}</option>
+        </select>
+      </div>
+
       <button class="btn btn-outline-primary me-2 d-flex align-items-center" (click)="limpiarTodo()">
         <i class="material-icons me-1">cleaning_services</i> Nuevo proceso
       </button>
@@ -36,7 +47,7 @@
           <th scope="col" style="width: 50px;">
             <input type="checkbox" class="form-check-input shadow-sm"
                    [disabled]="resultados.length === 0"
-                   [checked]="resultados.length > 0 && seleccionadas.length === resultados.length"
+                   [checked]="resultados.length > 0 && seleccionadas.length === (resultados.length < limiteResultados ? resultados.length : limiteResultados)"
                    (change)="toggleSeleccionTodos(($any($event.target)).checked)" style="cursor: pointer;" />
           </th>
           <th scope="col">ID Serie</th>
@@ -64,7 +75,7 @@
         </tr>
 
         <!-- Estado: resultados encontrados -->
-        <tr *ngFor="let serie of resultados">
+        <tr *ngFor="let serie of resultados | slice:0:limiteResultados">
           <td>
             <input type="checkbox" class="form-check-input shadow-sm" style="cursor: pointer;"
                    [checked]="seleccionadas.includes(serie.idSerie)" 
@@ -105,6 +116,7 @@
             <th>ID Serie</th>
             <th>Estado Anterior</th>
             <th>Nuevo Estado</th>
+            <th>Usuario Modificó</th>
           </tr>
         </thead>
         <tbody>
@@ -119,6 +131,9 @@
               <span class="badge" [ngClass]="h.nuevoEstado === 'Activo' ? 'bg-success' : 'bg-danger'">
                 {{ h.nuevoEstado }}
               </span>
+            </td>
+            <td>
+              <span class="text-secondary fw-semibold">{{ h.usuarioModifico }}</span>
             </td>
           </tr>
         </tbody>

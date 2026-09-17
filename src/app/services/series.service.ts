@@ -1,81 +1,54 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Serie } from '../models/serie.model';
-import { SeriesProvider } from '../providers/series.provider';
+import { urlApi } from '../providers/api.providers';
 
 /**
- * Servicio encargado de la logica de negocio para la gestion de las series.
+ * Modelo utilizado para enviar los datos de actualizacion de estado de una serie al backend.
+ */
+export interface UpdateSeriesModel {
+  /** Identificador unico de la serie que se va a actualizar. */
+  id_Serie: string;
+  /** Nombre del usuario que realiza la accion de actualizacion. */
+  m_UserName: string;
+  /** Fecha y hora exacta en la que se realiza la operacion (formato ISO). */
+  m_Fecha_Hora: string;
+}
+
+/**
+ * Servicio encargado de la logica de negocio y peticiones HTTP para la gestion de las series.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class SeriesService {
-  private series: Serie[] = [];
+  /** URL base para los endpoints de consulta de series. */
+  private apiUrl = `${urlApi.apiServer.urlBase}Series`;
+  /** URL base para los endpoints de actualizacion de series. */
+  private updateApiUrl = `${urlApi.apiServer.urlBase}UpdateSeries`;
 
   /**
-   * Constructor del servicio.
-   * @param seriesProvider Dependencia que inyecta los datos base de las series.
+   * Constructor del servicio de series.
+   * @param http Cliente HTTP para realizar peticiones al backend.
    */
-  constructor(private seriesProvider: SeriesProvider) {
-    this.series = this.seriesProvider.getSeries();
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Obtiene la lista de series que coinciden con el termino de busqueda.
+   * @param query Cadena de texto a buscar (pSerieProducto).
+   * @returns Un Observable que emite un arreglo de objetos de tipo Serie.
+   */
+  buscarSeriesCoincidencia(query: string): Observable<Serie[]> {
+    return this.http.get<Serie[]>(`${this.apiUrl}?pSerieProducto=${query}`);
   }
 
   /**
-   * Retorna la referencia a la lista de series en memoria para ser consumida.
-   * @returns Arreglo de tipo Serie.
+   * Envia una peticion para actualizar el estado de una serie especifica.
+   * @param modelo Objeto con los datos necesarios para la actualizacion (ID, usuario, fecha).
+   * @returns Un Observable con la respuesta generada por el backend.
    */
-  getSeries(): Serie[] {
-    return this.series;
-  }
-
-  /**
-   * Filtra las series segun el termino ingresado por el usuario.
-   * Busca ocurrencias en ID de Serie, Descripcion de Producto e ID de Producto.
-   * Si no hay termino de busqueda, retorna un arreglo vacio en lugar de todas las series.
-   * @param query Cadena de texto a buscar.
-   * @returns Arreglo de tipo Serie con las coincidencias encontradas.
-   */
-  buscarSeriesCoincidencia(query: string): Serie[] {
-    if (!query || query.trim() === '') {
-      return [];
-    }
-    const q = query.toLowerCase();
-    return this.series.filter(s =>
-      s.idSerie.toLowerCase().includes(q) ||
-      s.descripcionProducto.toLowerCase().includes(q) ||
-      s.idProducto.toLowerCase().includes(q)
-    );
-  }
-
-  /**
-   * Cambia el estado de una unica serie existente.
-   * @param idSerie Identificador de la serie.
-   * @param nuevoEstado El estado nuevo a aplicar.
-   * @returns Booleano indicando si se aplico correctamente.
-   */
-  cambiarEstadoSerie(idSerie: string, nuevoEstado: 'Activo' | 'Inactivo'): boolean {
-    const serie = this.series.find(s => s.idSerie === idSerie);
-    if (serie) {
-      serie.Estado = nuevoEstado;
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Actualiza el estado de forma masiva de varias series a la vez.
-   * @param idsSeries Arreglo de identificadores de las series.
-   * @param nuevoEstado El estado nuevo a aplicar a cada una.
-   * @returns Cantidad de series actualizadas.
-   */
-  cambiarEstadoVariasSeries(idsSeries: string[], nuevoEstado: 'Activo' | 'Inactivo'): number {
-    let actualizadas = 0;
-    idsSeries.forEach(id => {
-      const serie = this.series.find(s => s.idSerie === id);
-      if (serie) {
-        serie.Estado = nuevoEstado;
-        actualizadas++;
-      }
-    });
-    return actualizadas;
+  actualizarEstadoSerie(modelo: UpdateSeriesModel): Observable<any> {
+    return this.http.put(`${this.updateApiUrl}/estado`, modelo);
   }
 }
